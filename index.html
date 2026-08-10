@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CM² 燭芯選擇小幫手</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',sans-serif;background:#f4f2ef;color:#3a3530;-webkit-text-size-adjust:100%;font-size:15px}
+
+.header{background:#fff;border-bottom:1px solid #e5e2de;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.header-inner{max-width:960px;margin:0 auto;padding:0 16px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.logo-box{background:#1c1917;color:#fff;font-weight:900;font-size:20px;padding:5px 12px;border-radius:10px;letter-spacing:-1px;line-height:1}
+.steps-bar{background:#3d2c1e;padding:8px 16px;display:flex;gap:0;overflow-x:auto}
+.steps-bar::-webkit-scrollbar{display:none}
+.step-item{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:11px;color:#c8a882}
+.step-num{width:20px;height:20px;border-radius:50%;background:#c27136;color:#fff;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-arrow{color:#6b5040;margin:0 8px;font-size:12px}
+
+.content{max-width:960px;margin:0 auto;padding:16px;display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+@media(max-width:768px){.content{grid-template-columns:1fr}.sidebar{display:none}body{padding-bottom:80px}}
+.left{display:flex;flex-direction:column;gap:14px}
+
+.card{background:#fff;border-radius:16px;border:1px solid #e5e2de;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden}
+.card-head{padding:16px 18px 12px;border-bottom:1px solid #f0ede9;display:flex;align-items:flex-start;gap:10px}
+.card-num{width:26px;height:26px;border-radius:50%;background:#c27136;color:#fff;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.card-title{font-weight:700;font-size:15px;color:#2c2520}
+.card-sub{font-size:11px;color:#9a9088;margin-top:2px;line-height:1.5}
+.card-body{padding:16px 18px}
+
+select{width:100%;padding:12px 40px 12px 14px;border:1px solid #ddd;border-radius:12px;background:#f8f6f3;font-family:inherit;font-size:14px;color:#3a3530;appearance:none;-webkit-appearance:none;cursor:pointer;font-weight:500}
+select:focus{outline:none;border-color:#c27136;box-shadow:0 0 0 3px rgba(194,113,54,.15)}
+.select-wrap{position:relative}
+.select-wrap::after{content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#9a9088;pointer-events:none}
+
+.field-label{display:block;font-size:13px;font-weight:600;color:#6b5a4e;margin-bottom:8px}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:7px;border-radius:4px;outline:none;cursor:pointer;display:block}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#c27136;cursor:pointer;box-shadow:0 2px 6px rgba(194,113,54,.4);border:3px solid #fff}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#c27136;cursor:pointer;border:3px solid #fff}
+.slider-wrap{background:#f8f6f3;border:1px solid #e8e4df;border-radius:12px;padding:12px 14px}
+.slider-labels{display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:6px}
+.slider-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.slider-val{background:#fff;border:1px solid #e0dbd5;border-radius:10px;padding:4px 14px;text-align:center;min-width:72px}
+.slider-val .big{font-size:22px;font-weight:700;color:#c27136;line-height:1.1;display:block}
+.slider-val .unit{font-size:10px;color:#aaa}
+.auto-badge{font-size:10px;background:#f6ebe5;color:#c27136;border:1px solid #ebd5c8;border-radius:20px;padding:2px 8px;font-weight:600;display:inline-flex;align-items:center}
+
+.band-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:14px}
+.band-item{text-align:center;padding:7px 4px;border-radius:8px;border:2px solid transparent;font-size:11px;font-weight:600;color:#aaa;background:#f8f6f3;cursor:pointer;transition:all .15s;user-select:none}
+.band-item:hover{background:#f0ede9;color:#7a6a5e}
+.band-item.active{border-color:var(--bc);background:var(--bg);color:var(--bc)}
+
+.wax-item{border:1.5px solid #f0ede9;border-radius:12px;overflow:hidden;margin-bottom:8px;background:#faf9f7;transition:border-color .15s}
+.wax-item.active{border-color:#d0c8c0;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.wax-row{display:flex;align-items:center;gap:10px;padding:10px 12px 4px}
+.wax-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.wax-name{flex:1;min-width:0}
+.wax-name strong{font-size:13px;font-weight:700;display:block}
+.wax-name span{font-size:10px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.wax-pct{font-size:16px;font-weight:700;min-width:42px;text-align:right;color:#ddd}
+.wax-pct.on{color:#c27136}
+.info-btn{width:28px;height:28px;border-radius:50%;background:#f0ede9;border:none;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:#9a9088;flex-shrink:0}
+.info-btn:hover{background:#ebd5c8;color:#c27136}
+.wax-slider-wrap{padding:4px 12px 10px}
+.wax-info{margin:0 12px 12px;background:#f8f6f3;border:1px solid #ece9e4;border-radius:10px;padding:12px;font-size:11px}
+.wax-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-bottom:8px}
+.wax-info-grid dt{color:#9a9088;margin-bottom:1px}
+.wax-info-grid dd{font-weight:700;color:#4a3d35}
+.wax-examples{background:#ede8e2;border-radius:7px;padding:6px 10px;font-size:10px;color:#7a6a5e;margin-bottom:8px}
+.wax-tip{color:#7a6a5e;line-height:1.6;border-top:1px solid #ece9e4;padding-top:8px}
+
+.blend-bar-wrap{border:1px solid #e5e2de;border-radius:10px;overflow:hidden;margin-bottom:10px}
+.blend-bar{display:flex;height:22px}
+.blend-seg{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.9);transition:width .3s;overflow:hidden}
+.blend-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 10px;background:#f8f6f3}
+.blend-dot{display:flex;align-items:center;gap:5px;font-size:11px;color:#5a4e45}
+.blend-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+.valid-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:600;margin-bottom:10px}
+.valid-bar.ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+.valid-bar.warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.normalize-btn{font-size:11px;font-weight:700;text-decoration:underline;background:none;border:none;cursor:pointer;color:inherit}
+
+.preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.preset-btn{padding:5px 12px;border-radius:8px;background:#f0ede9;border:1px solid #e0dbd5;font-size:11px;font-weight:600;color:#5a4e45;cursor:pointer;font-family:inherit}
+.preset-btn:hover{background:#ebd5c8;color:#8b4513;border-color:#d4a07a}
+
+.toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;min-height:52px;cursor:pointer}
+.toggle-left{display:flex;align-items:center;gap:10px;flex:1}
+.toggle-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:background .2s}
+.toggle-switch{width:50px;height:28px;border-radius:14px;background:#d1cdc8;position:relative;cursor:pointer;border:none;flex-shrink:0;transition:background .2s}
+.toggle-switch.on{background:#c27136}
+.toggle-switch.on-rose{background:#f43f5e}
+.toggle-switch.on-amber{background:#f59e0b}
+.toggle-thumb{width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle-switch.on .toggle-thumb,.toggle-switch.on-rose .toggle-thumb,.toggle-switch.on-amber .toggle-thumb{transform:translateX(22px)}
+.toggle-sub{padding:0 18px 14px;border-top:1px solid #f0ede9;padding-top:12px}
+
+.type-btns{display:flex;gap:10px}
+.type-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid #e0dbd5;background:#f8f6f3;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#7a6a5e;transition:all .15s}
+.type-btn.active{background:#3d3530;color:#fff;border-color:#3d3530}
+
+.alert{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:9px;font-size:12px;line-height:1.5}
+.alert-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.alert-orange{background:#fff7ed;border:1px solid #fdba74;color:#c2410c}
+.alert-rose{background:#fff1f2;border:1px solid #fecdd3;color:#be123c}
+.alert-amber{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.alert-blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+
+.diag-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:none;border:none;cursor:pointer;font-family:inherit;text-align:left}
+.diag-body{border-top:1px solid #f0ede9}
+.diag-table{width:100%;border-collapse:collapse}
+.diag-table th{font-size:10px;font-weight:700;color:#9a9088;text-transform:uppercase;padding:8px 14px;border-bottom:1px solid #f0ede9;background:#faf9f7;text-align:left}
+.diag-table td{padding:10px 14px;font-size:12px;border-bottom:1px solid #f5f3f0;vertical-align:middle}
+.diag-table tr:last-child td{border-bottom:none}
+.diag-action-up{color:#ef4444;font-weight:700}
+.diag-action-dn{color:#3b82f6;font-weight:700}
+.diag-action-nc{color:#6b7280;font-weight:700}
+.test-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:12px 14px}
+.test-item{background:#f8f6f3;border-radius:8px;padding:8px 10px;font-size:11px}
+.test-item dt{color:#9a9088;margin-bottom:2px}
+.test-item dd{font-weight:700;color:#3a3530}
+
+/* ── Result panel ── */
+.result-panel{background:#1c1917;color:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.2);overflow:hidden;position:sticky;top:76px}
+.rs{padding:16px;border-bottom:1px solid #2d2925}
+.rs:last-child{border-bottom:none}
+.rl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a5450;margin-bottom:10px}
+
+/* Wick cards */
+.wc-main{border-radius:12px;padding:14px;margin-bottom:8px}
+.wc-brand{font-size:9px;font-weight:700;letter-spacing:.08em;margin-bottom:8px}
+.wc-size{font-size:36px;font-weight:900;line-height:1}
+.wc-note{font-size:10px;margin-top:5px;line-height:1.5;color:#6b6460}
+.wc-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:4px}
+
+.wc-small{background:#252018;border:1px solid #352e25;border-radius:10px;padding:10px 12px}
+.wc-small-brand{font-size:9px;font-weight:700;margin-bottom:3px}
+.wc-small-size{font-size:18px;font-weight:700;color:#e0dbd5}
+.wc-small-na{font-size:11px;color:#4a4540;font-weight:400}
+
+.wc-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* Materials */
+.mat-row{display:flex;align-items:center;justify-content:space-between;background:#252018;border-radius:9px;padding:8px 12px;margin-bottom:5px}
+.mat-left{display:flex;align-items:center;gap:8px;min-width:0}
+.mat-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.mat-name{font-size:12px;color:#c8c0b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mat-pct{font-size:10px;color:#5a5450;flex-shrink:0;margin-left:4px}
+.mat-g{font-size:14px;font-weight:700;color:#fff}
+.mat-unit{font-size:10px;color:#5a5450;margin-left:2px}
+.mat-total{display:flex;justify-content:space-between;font-size:12px;padding:6px 4px 2px;border-top:1px solid #2d2925;margin-top:2px;color:#6b6460}
+.mat-total strong{color:#c8c0b8}
+.mat-frag{display:flex;align-items:center;justify-content:space-between;background:#1a1208;border:1px solid rgba(194,113,54,.2);border-radius:9px;padding:8px 12px;margin-bottom:5px;margin-top:5px}
+.mat-grand{display:flex;justify-content:space-between;align-items:center;background:#2d2925;border:1px solid #352e25;border-radius:9px;padding:10px 12px;margin-top:5px}
+.mat-grand-label{font-size:12px;font-weight:700;color:#e0dbd5}
+.mat-grand-val{font-size:20px;font-weight:700;color:#fff}
+.mat-note{font-size:10px;color:#3d3530;margin-top:8px;line-height:1.5}
+
+/* Tips */
+.tip-item{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#5a5450;line-height:1.5;margin-bottom:6px}
+.tip-check{color:#7a5030;flex-shrink:0}
+.tip-item strong{color:#c8a882}
+
+.copy-btn{width:100%;padding:12px;border-radius:10px;border:1.5px solid #352e25;background:#252018;color:#c8c0b8;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.copy-btn:hover{background:#2d2925;color:#fff}
+.copy-btn.copied{background:#065f46;border-color:#047857;color:#fff}
+.disclaimer{font-size:10px;color:#3d3530;line-height:1.5;margin-top:8px}
+
+/* Mobile */
+.mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e2de;padding:12px 16px;z-index:90;box-shadow:0 -4px 12px rgba(0,0,0,.08)}
+.mobile-bar-btn{width:100%;padding:14px;border-radius:14px;background:#1c1917;color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px}
+.mobile-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;flex-shrink:0}
+@media(max-width:768px){.mobile-bar{display:block}}
+
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-end}
+.drawer-overlay.open{display:flex}
+.drawer{background:#1c1917;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:32px}
+.drawer-handle{display:flex;justify-content:center;padding:10px}
+.drawer-handle-bar{width:40px;height:4px;background:#3d3530;border-radius:2px}
+.drawer-header{display:flex;justify-content:space-between;align-items:center;padding:4px 18px 12px;color:#fff;font-weight:700;font-size:16px}
+.close-btn{width:34px;height:34px;border-radius:50%;background:#2d2925;border:none;color:#9a9088;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="logo-box">CM²</div>
+      <div>
+        <div style="font-weight:700;font-size:14px;color:#2c2520">燭芯選擇小幫手</div>
+        <div style="font-size:11px;color:#9a9088;margin-top:1px">天絲 / HTP / GE 三品牌對照</div>
+      </div>
+    </div>
+    <div id="band-badge" class="auto-badge" style="display:none">容器內徑 <span id="band-label-hdr" style="font-weight:900;margin-left:4px">—</span></div>
+  </div>
+</div>
+
+<div class="steps-bar">
+  <div class="step-item"><div class="step-num">1</div>確認容器內徑</div>
+  <div class="step-arrow">›</div>
+  <div class="step-item"><div class="step-num">2</div>依對照表選初始燭芯</div>
+  <div class="step-arrow">›</div>
+  <div class="step-item"><div class="step-num">3</div>考慮蠟材與香精比例</div>
+  <div class="step-arrow">›</div>
+  <div class="step-item"><div class="step-num">4</div>燃燒測試 2–4 小時</div>
+  <div class="step-arrow">›</div>
+  <div class="step-item"><div class="step-num">5</div>觀察與調整 ±1號</div>
+</div>
+
+<div class="content">
+<div class="left">
+
+<!-- Card 1 -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-num">1</div>
+    <div><div class="card-title">容器</div><div class="card-sub">選擇 CM² 容器型號可自動代入直徑與容量，或手動調整。</div></div>
+  </div>
+  <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+    <div>
+      <label class="field-label">選擇 CM² 容器型號</label>
+      <div class="select-wrap">
+        <select id="container-select" onchange="onContainerChange(this.value)">
+          <option value="">── 自訂尺寸（手動調整滑桿）──</option>
+          <option value="38,32">32密封寬口罐（直徑 38mm）</option>
+          <option value="55,54">54清酒杯（直徑 55mm）</option>
+          <option value="40,55">55一口烈酒杯（直徑 40mm）</option>
+          <option value="47,59">59透明小圓杯（直徑 47mm）</option>
+          <option value="55,60">60茶色玻璃罐（直徑 55mm）</option>
+          <option value="52,69">69透明小方杯（直徑 52mm）</option>
+          <option value="47,75">75透明小圓杯（直徑 47mm）</option>
+          <option value="50,85">85亞拉伯杯（直徑 50mm）</option>
+          <option value="47,85">85透明花紋底圓杯（直徑 47mm）</option>
+          <option value="48,85">85聖誕風格圓杯（直徑 48mm）</option>
+          <option value="68,90">90水晶玻璃小圓杯（直徑 68mm）</option>
+          <option value="55,95">95透明圓杯（直徑 55mm）</option>
+          <option value="65,100">100透明蛋型杯（直徑 65mm）</option>
+          <option value="70,100">100透明布丁杯含蓋（直徑 70mm）</option>
+          <option value="50,100">100啞光白杯（直徑 50mm）</option>
+          <option value="53,110">110透明方杯含蓋（直徑 53mm）</option>
+          <option value="61,120">120透明小圓杯（直徑 61mm）</option>
+          <option value="63,125">125花瓣紋透明圓杯（直徑 63mm）</option>
+          <option value="60,177">177透明圓杯（直徑 60mm）</option>
+          <option value="78,180">180水鑽寶盒四方杯（直徑 78mm）</option>
+          <option value="77,200">200菱格底透明馬芬杯（直徑 77mm）</option>
+          <option value="64,200">200霧面曲線杯（直徑 64mm）</option>
+          <option value="70,200">200霧面圓方杯（直徑 70mm）</option>
+          <option value="65,210">210啞光白杯（直徑 65mm）</option>
+          <option value="83,230">230透明大馬芬杯（直徑 83mm）</option>
+          <option value="57,234">234半霧圓杯（直徑 57mm）</option>
+          <option value="60,245">245透明厚圓杯（直徑 60mm）</option>
+          <option value="60,250">250茶色玻璃罐黑色鋁蓋（直徑 60mm）</option>
+          <option value="77,250">250大理石創意燭杯（直徑 77mm）</option>
+          <option value="75,255">255透明花紋底圓杯（直徑 75mm）</option>
+          <option value="51,256">256霧面圓杯（直徑 51mm）</option>
+          <option value="73,260">260透明圓杯（直徑 73mm）</option>
+          <option value="70,263">263透明北歐圓杯（直徑 70mm）</option>
+          <option value="72,265">265透明寬口圓杯（直徑 72mm）</option>
+          <option value="54,285">285霧面美晶圓杯（直徑 54mm）</option>
+          <option value="76,290">290星光點點杯（直徑 76mm）</option>
+          <option value="92,300">300透明大方杯（直徑 92mm）</option>
+          <option value="72,300">300噴色杯（直徑 72mm）</option>
+          <option value="70,325">325透明圓杯（直徑 70mm）</option>
+          <option value="83,365">365霧面圓杯（直徑 83mm）</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="band-grid">
+      <div class="band-item" id="band-30" style="--bc:#6b8abf;--bg:#eff3fa" onclick="setDiamBand(35)">3–4 cm</div>
+      <div class="band-item" id="band-40" style="--bc:#b8874a;--bg:#fdf3e7" onclick="setDiamBand(45)">4–5 cm</div>
+      <div class="band-item" id="band-50" style="--bc:#4a8a5a;--bg:#edf7ef" onclick="setDiamBand(55)">5–6 cm</div>
+      <div class="band-item" id="band-60" style="--bc:#c27136;--bg:#fdf0e8" onclick="setDiamBand(65)">6–7 cm</div>
+      <div class="band-item" id="band-70" style="--bc:#b8922a;--bg:#fdf8e7" onclick="setDiamBand(75)">7–8 cm</div>
+    </div>
+
+    <div>
+      <div class="slider-row">
+        <label class="field-label" style="margin-bottom:0">容器直徑 / 對角線 <span id="diam-auto" class="auto-badge" style="display:none">已自動代入</span></label>
+        <div class="slider-val"><span class="big" id="diam-disp">60</span><span class="unit">mm</span></div>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" id="diam-slider" min="30" max="100" step="1" value="60" oninput="onDiam(this.value)">
+        <div class="slider-labels"><span>30mm</span><span>65mm</span><span>100mm</span></div>
+      </div>
+      <div id="multi-alert" class="alert alert-warn" style="display:none;margin-top:8px">⚠ 直徑 ≥ 80mm 建議採雙芯或多芯配置，請參考右側推薦結果。</div>
+    </div>
+
+    <div>
+      <div class="slider-row">
+        <label class="field-label" style="margin-bottom:0">容器容量（以水測量）<span id="vol-auto" class="auto-badge" style="display:none">已自動代入</span></label>
+        <div class="slider-val"><span class="big" id="vol-disp">100</span><span class="unit">ml</span></div>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" id="vol-slider" min="10" max="500" step="5" value="100" oninput="onVol(this.value)">
+        <div class="slider-labels"><span>10ml</span><span>250ml</span><span>500ml</span></div>
+      </div>
+      <div style="font-size:11px;color:#aaa;margin-top:6px">ℹ 用於計算預估材料用量，以容器實際盛水容量為準。</div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2 -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-num">2</div>
+    <div><div class="card-title">蠟材配方</div><div class="card-sub">支援單一蠟材或混合配方，比例合計須達 100%。</div></div>
+  </div>
+  <div class="card-body">
+    <div id="wax-valid-bar" class="valid-bar warn">
+      <span id="wax-valid-txt">目前合計 100%</span>
+      <button class="normalize-btn" onclick="normalizeWax()" id="norm-btn" style="display:none">自動補正</button>
+    </div>
+    <div id="blend-bar-wrap" class="blend-bar-wrap" style="display:none">
+      <div class="blend-bar" id="blend-bar"></div>
+      <div class="blend-legend" id="blend-legend"></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:#9a9088;font-weight:600;margin-bottom:6px">⚡ 快速套用常見配方</div>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="applyPreset({soft_soy:100})">純軟豆蠟</button>
+        <button class="preset-btn" onclick="applyPreset({soft_soy:70,veg:30})">豆植蠟 7:3</button>
+        <button class="preset-btn" onclick="applyPreset({veg:100})">純植物蠟</button>
+        <button class="preset-btn" onclick="applyPreset({paraffin:100})">純石蠟</button>
+        <button class="preset-btn" onclick="applyPreset({beeswax:30,soft_soy:70})">蜂蠟豆蠟 3:7</button>
+        <button class="preset-btn" onclick="applyPreset({hard_soy:30,soft_soy:70})">硬軟豆蠟 3:7</button>
+      </div>
+    </div>
+    <div id="wax-sliders"></div>
+  </div>
+</div>
+
+<!-- Card 3 -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-num">3</div>
+    <div><div class="card-title">配方細節</div><div class="card-sub">依實際使用的材料勾選，系統將自動選擇適合的燭芯系列。</div></div>
+  </div>
+  <div class="card-body" style="padding:0;display:flex;flex-direction:column;gap:0">
+
+    <!-- Fragrance -->
+    <div style="border-bottom:1px solid #f0ede9">
+      <div class="toggle-wrap" onclick="toggleFrag()">
+        <div class="toggle-left">
+          <div class="toggle-icon" id="frag-icon" style="background:#f0ede9">💧</div>
+          <div>
+            <div style="font-weight:600;font-size:14px">添加香精 / 精油？</div>
+            <div style="font-size:11px;color:#9a9088;margin-top:1px" id="frag-hint">未添加</div>
+          </div>
+        </div>
+        <button class="toggle-switch" id="frag-sw"><div class="toggle-thumb"></div></button>
+      </div>
+      <div id="frag-sub" style="display:none" class="toggle-sub">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:13px;font-weight:600;color:#7a4a2a">添加比例</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="frag-grade" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#ecfdf5;color:#065f46">標準</span>
+            <span id="frag-pct-disp" style="font-size:18px;font-weight:700;color:#c27136;min-width:40px;text-align:right">6%</span>
+          </div>
+        </div>
+        <input type="range" id="frag-slider" min="1" max="15" value="6" oninput="onFrag(this.value)">
+        <div class="slider-labels"><span>1% 低</span><span>8% 中</span><span>15% 超高</span></div>
+        <div id="frag-warn" class="alert alert-orange" style="display:none;margin-top:8px">⚠ 超高香精比例可能影響燃燒穩定性，建議先小批測試。</div>
+      </div>
+    </div>
+
+    <!-- Dye -->
+    <div style="border-bottom:1px solid #f0ede9">
+      <div class="toggle-wrap" onclick="toggleDye()">
+        <div class="toggle-left">
+          <div class="toggle-icon" id="dye-icon" style="background:#f0ede9">🎨</div>
+          <div style="font-weight:600;font-size:14px">添加染料 / 色塊？</div>
+        </div>
+        <button class="toggle-switch" id="dye-sw"><div class="toggle-thumb"></div></button>
+      </div>
+      <div id="dye-sub" style="display:none" class="toggle-sub">
+        <div class="type-btns">
+          <button class="type-btn active" id="dye-liquid" onclick="setDyeType('liquid')">💧 液體染料</button>
+          <button class="type-btn" id="dye-solid" onclick="setDyeType('solid')">🧱 固體色塊</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mica -->
+    <div>
+      <div class="toggle-wrap" onclick="toggleMica()">
+        <div class="toggle-left">
+          <div class="toggle-icon" id="mica-icon" style="background:#f0ede9">✨</div>
+          <div style="font-weight:600;font-size:14px">添加雲母粉 / 珠光粉？</div>
+        </div>
+        <button class="toggle-switch" id="mica-sw"><div class="toggle-thumb"></div></button>
+      </div>
+      <div id="mica-sub" style="display:none" class="toggle-sub">
+        <div class="alert alert-rose">⚠ 粉狀物容易堵塞燭芯，系統已自動大幅提升推薦號數。</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Card 4 -->
+<div class="card">
+  <button class="diag-toggle" onclick="toggleDiag()">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="card-num" style="background:#f59e0b">4</div>
+      <div><div class="card-title">燃燒判斷與調整建議</div><div class="card-sub">觀察燃燒現象，決定是否換號（來自 CM² Technical Guide）</div></div>
+    </div>
+    <span id="diag-arrow" style="font-size:18px;color:#aaa">▾</span>
+  </button>
+  <div id="diag-body" class="diag-body" style="display:none">
+    <div class="test-grid">
+      <dl class="test-item"><dt>芯長</dt><dd>5–7 mm</dd></dl>
+      <dl class="test-item"><dt>燃燒時間</dt><dd>2–4 小時</dd></dl>
+      <dl class="test-item"><dt>環境溫度</dt><dd>20–28°C</dd></dl>
+      <dl class="test-item"><dt>觀察重點</dt><dd>火焰/蠟池/積碳</dd></dl>
+    </div>
+    <table class="diag-table">
+      <thead><tr><th>現象</th><th>原因</th><th>調整建議</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>🔥 火焰太少</td><td>供油不足</td><td class="diag-action-up">換大一號</td><td>蠟池小、燃燒無力</td></tr>
+        <tr><td>🔥 火焰太高</td><td>供油過多</td><td class="diag-action-dn">換小一號</td><td>火焰過旺、易黑煙</td></tr>
+        <tr><td>🌫 積碳/黑煙</td><td>供油過多/芯過長</td><td class="diag-action-dn">換小一號或修剪芯</td><td>芯頭積碳、容器壁黑</td></tr>
+        <tr><td>⭕ 不到邊/蠟池小</td><td>功率不足</td><td class="diag-action-up">換大一號</td><td>燃燒時間長、耗蠟不均</td></tr>
+        <tr><td>💧 流蠟/溢蠟</td><td>功率過大</td><td class="diag-action-dn">換小一號</td><td>蠟池過深、容易溢出</td></tr>
+        <tr><td>〰 火焰搖曳飄動</td><td>通風/芯長不當</td><td class="diag-action-nc">調整環境或修剪至 5–7mm</td><td>保持芯長 5–7mm 最佳</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /left -->
+
+<div class="sidebar">
+  <div class="result-panel" id="result-panel"></div>
+</div>
+</div>
+
+<div class="mobile-bar">
+  <button class="mobile-bar-btn" onclick="openDrawer()">
+    ✨ 查看燭芯推薦
+    <span class="mobile-badge" id="mob-badge" style="background:#c27136;color:#fff">L32</span>
+  </button>
+</div>
+
+<div class="drawer-overlay" id="drawer-overlay" onclick="if(event.target===this)closeDrawer()">
+  <div class="drawer">
+    <div class="drawer-handle"><div class="drawer-handle-bar"></div></div>
+    <div class="drawer-header">
+      <span>燭芯推薦結果</span>
+      <button class="close-btn" onclick="closeDrawer()">✕</button>
+    </div>
+    <div style="padding:0 14px 16px" id="drawer-result"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────
+const WAX_TYPES = [
+  { id:'paraffin',  name:'石蠟',       examples:'石蠟 / 精製石蠟 / 微晶蠟',              modifier:0,  density:0.90, color:'#94a3b8', isNatural:false,
+    meltPoint:'46–68°C', scent:'★★★★★', surface:'光滑透亮', suitable:'容器蠟、柱狀蠟',
+    tip:'燃燒效率最高，香氛附著力強，所有蠟材中需最小號燭芯。' },
+  { id:'soft_soy',  name:'軟質大豆蠟', examples:'C3 / CB-Advanced / 464 / EcoSoya CB', modifier:12, density:0.86, color:'#d4b483', isNatural:true,
+    meltPoint:'45–52°C', scent:'★★★★☆', surface:'奶油霧面', suitable:'容器蠟（最常用）',
+    tip:'最廣泛使用的天然容器蠟。天然蠟通常需提高 1 號燭芯。' },
+  { id:'hard_soy',  name:'硬質大豆蠟', examples:'PB / 444 / EcoSoya Pillar',             modifier:22, density:0.84, color:'#a0864a', isNatural:true,
+    meltPoint:'56–65°C', scent:'★★★☆☆', surface:'乾燥易收縮', suitable:'柱狀蠟、造型蠟',
+    tip:'熔點高硬度大，燃燒阻力大，需明顯較大號燭芯。' },
+  { id:'veg',       name:'植物蠟',     examples:'椰子蠟 / 棕櫚蠟 / EcoSoya Coconut',    modifier:10, density:0.88, color:'#7fb87f', isNatural:true,
+    meltPoint:'45–56°C', scent:'★★★★★', surface:'乳白絲滑至霧面', suitable:'容器蠟、混合蠟',
+    tip:'椰子蠟香氛附著力為天然蠟材之冠，質地偏軟，常與豆蠟混合。' },
+  { id:'beeswax',   name:'蜂蠟',       examples:'精製蜂蠟（白蠟）/ 天然蜂蠟（黃蠟）',    modifier:28, density:0.96, color:'#e8a020', isNatural:true,
+    meltPoint:'62–65°C', scent:'★★☆☆☆', surface:'金黃光澤', suitable:'柱狀蠟、混合蠟',
+    tip:'熔點與黏度最高，需選最大號燭芯，是混合配方中影響最大的蠟材。' },
+];
+
+const WICK_ROWS = [
+  { L_std:'L16', L_hd:'L18', htp:'—',        ge:'GE 0.05', score:0   },
+  { L_std:'L20', L_hd:'L22', htp:'HTP-31',   ge:'GE 0.08', score:12  },
+  { L_std:'L24', L_hd:'L26', htp:'HTP-52',   ge:'GE 01',   score:25  },
+  { L_std:'L28', L_hd:'L30', htp:'—',         ge:'GE 02',   score:38  },
+  { L_std:'L32', L_hd:'L36', htp:'HTP-73',   ge:'GE 04',   score:52  },
+  { L_std:'L40', L_hd:'L44', htp:'HTP-73LG', ge:'GE 06',   score:68  },
+  { L_std:'L48', L_hd:'L52', htp:'HTP-93',   ge:'GE 08',   score:86  },
+  { L_std:'L56', L_hd:'L60', htp:'HTP-105',  ge:'GE 10',   score:105 },
+  { L_std:'L64', L_hd:'L68', htp:'HTP-126',  ge:'—',        score:126 },
+  { L_std:'L72', L_hd:'L76', htp:'—',         ge:'—',        score:150 },
+];
+
+// ─── STATE ─────────────────────────────────────────────────────────────
+const S = {
+  diameter:60, volume:100, isAuto:false,
+  wax:{ paraffin:0, soft_soy:100, hard_soy:0, veg:0, beeswax:0 },
+  hasFrag:false, fragLoad:6,
+  hasDye:false, dyeType:'liquid',
+  hasMica:false,
+  expandedWax:null,
+};
+
+// ─── LOGIC ─────────────────────────────────────────────────────────────
+
+// Is this a "high-load" scenario based on user's actual inputs?
+// Triggers: high frag %, all-natural wax (>50% natural), mica, solid dye
+function isHighLoad() {
+  const naturalPct = WAX_TYPES.filter(w=>w.isNatural).reduce((s,w)=>s+(S.wax[w.id]||0),0);
+  return (
+    (S.hasFrag && S.fragLoad > 8) ||   // high fragrance %
+    naturalPct > 50 ||                  // mostly natural wax
+    S.hasMica                           // mica blocks wick
+  );
+}
+
+// Reason labels for why HD is recommended
+function hdReasons() {
+  const reasons = [];
+  const naturalPct = WAX_TYPES.filter(w=>w.isNatural).reduce((s,w)=>s+(S.wax[w.id]||0),0);
+  if (naturalPct > 50) reasons.push(`天然蠟佔比 ${naturalPct}%`);
+  if (S.hasFrag && S.fragLoad > 8) reasons.push(`高香精比例 ${S.fragLoad}%`);
+  if (S.hasMica) reasons.push('添加雲母粉');
+  return reasons;
+}
+
+function calcWaxMod() {
+  return Math.round(WAX_TYPES.reduce((s,w) => s + w.modifier*((S.wax[w.id]||0)/100), 0));
+}
+
+function calcRow() {
+  const base = Math.max(0, (S.diameter - 30) * 1.5);
+  const wax  = calcWaxMod();
+  let frag = 0;
+  if (S.hasFrag) {
+    const fl = S.fragLoad;
+    frag = fl<=3?2 : fl<=6?5 : fl<=8?9 : fl<=10?13 : fl<=12?17 : 22;
+  }
+  const dye  = S.hasDye  ? (S.dyeType==='solid'?8:3) : 0;
+  const mica = S.hasMica ? 22 : 0;
+  const total = Math.round(base + wax + frag + dye + mica);
+  let idx = 0;
+  for (let i = WICK_ROWS.length-1; i>=0; i--) {
+    if (total >= WICK_ROWS[i].score) { idx=i; break; }
+  }
+  return Math.min(idx, WICK_ROWS.length-1);
+}
+
+function calcMats() {
+  const avgD = WAX_TYPES.reduce((s,w) => s + w.density*((S.wax[w.id]||0)/100), 0);
+  const totalWax = parseFloat((S.volume * avgD).toFixed(1));
+  const breakdown = WAX_TYPES
+    .filter(w=>(S.wax[w.id]||0)>0)
+    .map(w=>({ ...w, ratio:S.wax[w.id], grams:parseFloat((totalWax*(S.wax[w.id]/100)).toFixed(1)) }));
+  const fragG = S.hasFrag ? parseFloat((totalWax*(S.fragLoad/100)).toFixed(1)) : 0;
+  const grand = parseFloat((totalWax+fragG).toFixed(1));
+  return { totalWax, breakdown, fragG, grand, avgD };
+}
+
+function waxTotal() { return Object.values(S.wax).reduce((a,b)=>a+b,0); }
+
+// ─── RENDER ────────────────────────────────────────────────────────────
+function render() {
+  renderBand();
+  renderSliders();
+  renderWax();
+  renderResult();
+  renderMobBadge();
+}
+
+function renderBand() {
+  const d = S.diameter;
+  ['band-30','band-40','band-50','band-60','band-70'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  const bid = d<40?'band-30':d<50?'band-40':d<60?'band-50':d<70?'band-60':'band-70';
+  document.getElementById(bid).classList.add('active');
+  const lbl = d<40?'3–4 cm':d<50?'4–5 cm':d<60?'5–6 cm':d<70?'6–7 cm':'7–8 cm';
+  const bb = document.getElementById('band-badge');
+  bb.style.display = 'inline-flex';
+  document.getElementById('band-label-hdr').textContent = lbl;
+}
+
+function renderSliders() {
+  const d=S.diameter, v=S.volume;
+  document.getElementById('diam-disp').textContent = d;
+  document.getElementById('vol-disp').textContent  = v;
+  document.getElementById('diam-slider').value = d;
+  document.getElementById('vol-slider').value  = v;
+  const dp = ((d-30)/70)*100;
+  document.getElementById('diam-slider').style.background =
+    `linear-gradient(to right,#c27136 0%,#c27136 ${dp}%,#d6d3d1 ${dp}%,#d6d3d1 100%)`;
+  const vp = ((v-10)/490)*100;
+  document.getElementById('vol-slider').style.background =
+    `linear-gradient(to right,#c27136 0%,#c27136 ${vp}%,#d6d3d1 ${vp}%,#d6d3d1 100%)`;
+  document.getElementById('diam-auto').style.display = S.isAuto?'inline-flex':'none';
+  document.getElementById('vol-auto').style.display  = S.isAuto?'inline-flex':'none';
+  document.getElementById('multi-alert').style.display = d>=80?'flex':'none';
+}
+
+function renderWax() {
+  const tot = waxTotal();
+  const valid = tot===100;
+  const vb = document.getElementById('wax-valid-bar');
+  vb.className = 'valid-bar '+(valid?'ok':'warn');
+  document.getElementById('wax-valid-txt').textContent =
+    valid ? '配方合計 100% ✓' :
+    tot<100 ? `目前合計 ${tot}%，還差 ${100-tot}%` : `目前合計 ${tot}%，超出 ${tot-100}%`;
+  document.getElementById('norm-btn').style.display = (!valid&&tot>0)?'inline':'none';
+
+  const active = WAX_TYPES.filter(w=>(S.wax[w.id]||0)>0);
+  const bwrap = document.getElementById('blend-bar-wrap');
+  bwrap.style.display = active.length>0?'block':'none';
+  if (active.length>0) {
+    const rem = 100-tot;
+    document.getElementById('blend-bar').innerHTML =
+      active.map(w=>`<div class="blend-seg" style="width:${S.wax[w.id]}%;background:${w.color}">${S.wax[w.id]>=8?S.wax[w.id]+'%':''}</div>`).join('')+
+      (rem>0?`<div class="blend-seg" style="width:${rem}%;background:#e5e2de"></div>`:'');
+    document.getElementById('blend-legend').innerHTML =
+      active.map(w=>`<span class="blend-dot"><span class="blend-swatch" style="background:${w.color}"></span>${w.name} <strong>${S.wax[w.id]}%</strong></span>`).join('')+
+      (rem>0?`<span class="blend-dot"><span class="blend-swatch" style="background:#e5e2de"></span>未分配 ${rem}%</span>`:'');
+  }
+
+  document.getElementById('wax-sliders').innerHTML = WAX_TYPES.map(w=>{
+    const val=S.wax[w.id]||0, on=val>0;
+    const bg=`linear-gradient(to right,${w.color} 0%,${w.color} ${val}%,#e7e5e4 ${val}%,#e7e5e4 100%)`;
+    const open=S.expandedWax===w.id;
+    return `<div class="wax-item ${on?'active':''}" id="wi-${w.id}">
+      <div class="wax-row">
+        <div class="wax-dot" style="background:${w.color}"></div>
+        <div class="wax-name"><strong style="color:${on?'#2c2520':'#aaa'}">${w.name}</strong><span>${w.examples}</span></div>
+        <span class="wax-pct ${on?'on':''}">${val}%</span>
+        <button class="info-btn" onclick="toggleWaxInfo('${w.id}')">${open?'▲':'ℹ'}</button>
+      </div>
+      <div class="wax-slider-wrap">
+        <input type="range" min="0" max="100" step="1" value="${val}" style="background:${bg}" oninput="onWaxSlide('${w.id}',parseInt(this.value))">
+        <div class="slider-labels"><span>0%</span><span>50%</span><span>100%</span></div>
+      </div>
+      ${open?`<div class="wax-info">
+        <dl class="wax-info-grid">
+          <dt>熔點範圍</dt><dd>${w.meltPoint}</dd>
+          <dt>香氛附著力</dt><dd>${w.scent}</dd>
+          <dt>表面效果</dt><dd>${w.surface}</dd>
+          <dt>適合用途</dt><dd>${w.suitable}</dd>
+        </dl>
+        <div class="wax-examples">常見品項：${w.examples}</div>
+        <div class="wax-tip">${w.tip}</div>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function buildResultHTML() {
+  const idx  = calcRow();
+  const row  = WICK_ROWS[idx];
+  const hdIdx = Math.min(idx+1, WICK_ROWS.length-1);
+  const hdRow = WICK_ROWS[hdIdx];
+  const mats = calcMats();
+  const valid = waxTotal()===100;
+  const hl   = isHighLoad();
+  const reasons = hdReasons();
+  const multiWick = S.diameter >= 80;
+
+  const activeWax = WAX_TYPES.filter(w=>(S.wax[w.id]||0)>0)
+    .map(w=>`${w.name} ${S.wax[w.id]}%`).join('、');
+
+  // The recommended series: if high-load → HD; else → standard
+  // Show the definitive recommended size prominently, with a brief note of the other option
+  const recSize = hl ? hdRow.L_hd : row.L_std;
+  const altSize = hl ? row.L_std  : hdRow.L_hd;
+  const recLabel = hl ? '天絲高負載 HD 系列' : '天絲標準系列';
+  const altLabel = hl ? '低負載配方可改用標準' : '如換用高負載 HD 系列';
+  const recColor = hl ? '#fbbf24' : '#ffffff';
+  const recBg    = hl
+    ? 'linear-gradient(135deg,#2d1f08,#1e1a08)'
+    : 'linear-gradient(135deg,#2d1f12,#1e1812)';
+  const recBorder = hl ? 'rgba(251,191,36,.35)' : 'rgba(194,113,54,.35)';
+  const recTag    = hl
+    ? '<span style="font-size:9px;font-weight:700;background:#f59e0b;color:#fff;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:6px">⚡ 高負載配方</span>'
+    : '<span style="font-size:9px;font-weight:700;background:#c27136;color:#fff;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:6px">一般配方</span>';
+
+  let html = `<div class="rs">
+    <div class="rl">推薦燭芯規格</div>
+
+    <!-- Main recommendation -->
+    <div style="background:${recBg};border:1px solid ${recBorder};border-radius:14px;padding:16px;margin-bottom:8px">
+      ${recTag}
+      <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:#8a7a68;margin-bottom:6px">${recLabel}</div>
+      <div style="font-size:44px;font-weight:900;line-height:1;color:${recColor}">${recSize}</div>
+      ${reasons.length>0?`<div style="margin-top:8px;font-size:10px;color:#7a6a5a;line-height:1.6">判斷依據：${reasons.join('、')}</div>`:''}
+      <div style="margin-top:8px;font-size:10px;color:#4a4540;border-top:1px solid rgba(255,255,255,.07);padding-top:8px">${altLabel}：<strong style="color:#8a8078">${altSize}</strong></div>
+    </div>
+
+    <!-- HTP + GE -->
+    <div class="wc-row2">
+      <div class="wc-small">
+        <div class="wc-small-brand" style="color:#60a5fa">美國 HTP</div>
+        <div class="wc-small-size">${row.htp!=='—'?row.htp:'<span class="wc-small-na">無對應型號</span>'}</div>
+      </div>
+      <div class="wc-small">
+        <div class="wc-small-brand" style="color:#6fbf6f">德國 GE</div>
+        <div class="wc-small-size">${row.ge!=='—'?row.ge:'<span class="wc-small-na">無對應型號</span>'}</div>
+      </div>
+    </div>
+
+    ${multiWick?`<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:11px;color:#fca5a5;line-height:1.5">
+      ⚠ 直徑 ≥ 80mm 建議採<strong>雙芯或多芯</strong>配置。雙芯間距為直徑的 35–50%，三芯請均勻三角排列。
+    </div>`:''}
+  </div>`;
+
+  // HD vs Standard explanation
+  html += `<div class="rs">
+    <div class="rl">天絲系列選擇說明</div>
+    <div style="font-size:11px;color:#6b6460;line-height:1.7">
+      <div style="display:flex;gap:6px;margin-bottom:5px">
+        <span style="color:${hl?'#4a4540':'#c27136'};flex-shrink:0">${hl?'○':'●'}</span>
+        <span><strong style="color:${hl?'#5a5450':'#c8a882'}">標準系列（${row.L_std}）</strong>　石蠟、低香精、無輔料</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <span style="color:${hl?'#f59e0b':'#4a4540'};flex-shrink:0">${hl?'●':'○'}</span>
+        <span><strong style="color:${hl?'#fbbf24':'#5a5450'}">高負載 HD（${hdRow.L_hd}）</strong>　天然蠟 &gt;50%、高香精、雲母粉</span>
+      </div>
+    </div>
+  </div>`;
+
+  // Materials
+  html += `<div class="rs">
+    <div class="rl">預估材料使用量${!valid?' <span style="color:#f59e0b;font-size:9px">（蠟材比例未達100%）</span>':''}</div>
+    ${mats.breakdown.map(w=>`
+    <div class="mat-row">
+      <div class="mat-left">
+        <div class="mat-swatch" style="background:${w.color}"></div>
+        <span class="mat-name">${w.name}</span><span class="mat-pct">(${w.ratio}%)</span>
+      </div>
+      <span><span class="mat-g">${w.grams.toFixed(1)}</span><span class="mat-unit">g</span></span>
+    </div>`).join('')}
+    <div class="mat-total"><span>蠟材合計</span><strong>${mats.totalWax.toFixed(1)} g</strong></div>
+    ${S.hasFrag?`<div class="mat-frag">
+      <span style="font-size:12px;color:#c8a882">💧 香精/精油 <span style="color:#5a5450;font-size:10px">(${S.fragLoad}%)</span></span>
+      <span><span class="mat-g" style="color:#c8a882">${mats.fragG.toFixed(1)}</span><span class="mat-unit">g</span></span>
+    </div>`:''}
+    <div class="mat-grand">
+      <span class="mat-grand-label">總用料合計</span>
+      <span><span class="mat-grand-val">${mats.grand.toFixed(1)}</span><span class="mat-unit" style="font-size:12px">g</span></span>
+    </div>
+    <div class="mat-note">* 加權平均密度 ${mats.avgD.toFixed(2)} g/ml。實際用量受倒蠟溫度影響。</div>
+  </div>`;
+
+  // Tips
+  html += `<div class="rs">
+    <div class="rl">選芯小提醒</div>
+    <div class="tip-item"><span class="tip-check">✓</span><span>首次測試以<strong>中間尺寸</strong>開始，再依燃燒狀況調整</span></div>
+    <div class="tip-item"><span class="tip-check">✓</span><span>每次只調整 <strong>±1 號</strong>，便於判斷差異</span></div>
+    <div class="tip-item"><span class="tip-check">✓</span><span>建議燃燒測試 <strong>2–4 小時</strong>後觀察火焰、蠟池與積碳</span></div>
+    <div class="tip-item"><span class="tip-check">✓</span><span>良好燃燒 = 適當供油 + 穩定火焰 + 均勻蠟池</span></div>
+  </div>`;
+
+  // Copy
+  html += `<div class="rs">
+    <button class="copy-btn" onclick="doCopy()">📋 複製結果</button>
+    <div class="disclaimer">⚠ 燭芯選擇僅供初步參考，請務必進行 2–4 小時實際燃燒測試後再調整。</div>
+  </div>`;
+
+  return html;
+}
+
+function renderResult() {
+  const html = buildResultHTML();
+  document.getElementById('result-panel').innerHTML = html;
+  document.getElementById('drawer-result').innerHTML = html;
+}
+
+function renderMobBadge() {
+  const idx = calcRow();
+  const row = WICK_ROWS[idx];
+  const hl  = isHighLoad();
+  const b   = document.getElementById('mob-badge');
+  b.textContent = hl ? WICK_ROWS[Math.min(idx+1,WICK_ROWS.length-1)].L_hd : row.L_std;
+  b.style.background = hl ? '#f59e0b' : '#c27136';
+}
+
+// ─── INTERACTIONS ──────────────────────────────────────────────────────
+function onContainerChange(v) {
+  if (!v) { S.isAuto=false; render(); return; }
+  const [d,vol]=v.split(',').map(Number);
+  S.diameter=d; S.volume=vol; S.isAuto=true;
+  render();
+}
+function onDiam(v){ S.diameter=parseInt(v); S.isAuto=false; document.getElementById('container-select').value=''; render(); }
+function onVol(v) { S.volume=parseInt(v);  S.isAuto=false; document.getElementById('container-select').value=''; render(); }
+function setDiamBand(v){ S.diameter=v; S.isAuto=false; document.getElementById('container-select').value=''; render(); }
+
+function onWaxSlide(id,v) {
+  const otherTot = WAX_TYPES.filter(w=>w.id!==id).reduce((s,w)=>s+(S.wax[w.id]||0),0);
+  S.wax[id]=Math.min(v,100-otherTot);
+  render();
+}
+function normalizeWax() {
+  const entries=WAX_TYPES.map(w=>[w.id,S.wax[w.id]||0]);
+  const tot=entries.reduce((s,[,v])=>s+v,0);
+  if(!tot)return;
+  let used=0;
+  entries.forEach(([id,v],i)=>{
+    if(i===entries.length-1) S.wax[id]=100-used;
+    else{const n=Math.round((v/tot)*100);S.wax[id]=n;used+=n;}
+  });
+  render();
+}
+function applyPreset(r){ WAX_TYPES.forEach(w=>{S.wax[w.id]=r[w.id]||0;}); render(); }
+function toggleWaxInfo(id){ S.expandedWax=S.expandedWax===id?null:id; render(); }
+
+function toggleFrag() {
+  S.hasFrag=!S.hasFrag;
+  const on=S.hasFrag;
+  document.getElementById('frag-sw').className='toggle-switch'+(on?' on':'');
+  document.getElementById('frag-icon').style.background=on?'#e0f2fe':'#f0ede9';
+  document.getElementById('frag-sub').style.display=on?'block':'none';
+  document.getElementById('frag-hint').textContent=on?`香精 ${S.fragLoad}%`:'未添加';
+  render();
+}
+function onFrag(v) {
+  S.fragLoad=parseInt(v);
+  const grades=[[3,'低濃度','#ecfdf5','#065f46'],[6,'標準','#f0fdf4','#166534'],
+    [8,'中濃度','#fefce8','#854d0e'],[10,'高濃度','#fff7ed','#c2410c'],
+    [12,'極高','#fff1f2','#be123c'],[99,'超高！','#fff1f2','#9f1239']];
+  const g=grades.find(([c])=>v<=c)||grades[grades.length-1];
+  document.getElementById('frag-pct-disp').textContent=v+'%';
+  document.getElementById('frag-hint').textContent=S.hasFrag?`香精 ${v}%`:'未添加';
+  const gr=document.getElementById('frag-grade');
+  gr.textContent=g[1];gr.style.background=g[2];gr.style.color=g[3];
+  const p=((v-1)/14)*100;
+  document.getElementById('frag-slider').style.background=`linear-gradient(to right,#c27136 0%,#c27136 ${p}%,#ebd5c8 ${p}%,#ebd5c8 100%)`;
+  document.getElementById('frag-warn').style.display=v>12?'flex':'none';
+  render();
+}
+
+function toggleDye() {
+  S.hasDye=!S.hasDye;
+  const on=S.hasDye;
+  document.getElementById('dye-sw').className='toggle-switch'+(on?' on':'');
+  document.getElementById('dye-icon').style.background=on?'#f5f5f4':'#f0ede9';
+  document.getElementById('dye-sub').style.display=on?'block':'none';
+  render();
+}
+function setDyeType(t){
+  S.dyeType=t;
+  document.getElementById('dye-liquid').className='type-btn'+(t==='liquid'?' active':'');
+  document.getElementById('dye-solid').className='type-btn'+(t==='solid'?' active':'');
+  render();
+}
+
+function toggleMica() {
+  S.hasMica=!S.hasMica;
+  const on=S.hasMica;
+  document.getElementById('mica-sw').className='toggle-switch'+(on?' on-rose':'');
+  document.getElementById('mica-icon').style.background=on?'#fff1f2':'#f0ede9';
+  document.getElementById('mica-sub').style.display=on?'block':'none';
+  render();
+}
+
+function toggleDiag() {
+  const b=document.getElementById('diag-body');
+  const open=b.style.display==='none';
+  b.style.display=open?'block':'none';
+  document.getElementById('diag-arrow').textContent=open?'▴':'▾';
+}
+
+function openDrawer(){document.getElementById('drawer-overlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeDrawer(){document.getElementById('drawer-overlay').classList.remove('open');document.body.style.overflow='';}
+
+function doCopy() {
+  const idx=calcRow(), row=WICK_ROWS[idx], hdIdx=Math.min(idx+1,WICK_ROWS.length-1), hdRow=WICK_ROWS[hdIdx];
+  const hl=isHighLoad(), reasons=hdReasons(), mats=calcMats();
+  const activeWax=WAX_TYPES.filter(w=>(S.wax[w.id]||0)>0).map(w=>`${w.name} ${S.wax[w.id]}%`).join('、');
+  const recSize=hl?hdRow.L_hd:row.L_std, recLabel=hl?'天絲高負載 HD':'天絲標準系列';
+  const L=[
+    '═══════════════════════════════',
+    '  CM² 燭芯選擇小幫手 ── 結果',
+    '═══════════════════════════════','',
+    `【推薦燭芯（${recLabel}）】`,
+    `  天絲：${recSize}`,
+    row.htp!=='—'?`  HTP：${row.htp}`:'',
+    row.ge!=='—' ?`  GE：${row.ge}`:'',
+    hl&&reasons.length?`  判斷依據：${reasons.join('、')}`:'',
+    hl?`  一般配方可改用標準系列：${row.L_std}`:
+       `  高負載配方可改用 HD 系列：${hdRow.L_hd}`,
+    '','【蠟材配方】',`  ${activeWax||'（未設定）'}`,
+    S.hasFrag?`  香精/精油：${S.fragLoad}%`:'',
+    S.hasDye ?`  染料：${S.dyeType==='solid'?'固體色塊':'液體染料'}`:'',
+    S.hasMica?`  雲母粉/珠光粉：有`:'',
+    '','【預估材料使用量】',
+    ...mats.breakdown.map(w=>`  ${w.name}（${w.ratio}%）：${w.grams.toFixed(1)} g`),
+    `  蠟材合計：${mats.totalWax.toFixed(1)} g`,
+    S.hasFrag?`  香精（${S.fragLoad}%）：${mats.fragG.toFixed(1)} g`:'',
+    `  ─────────────`,`  總用料合計：${mats.grand.toFixed(1)} g`,'',
+    '【注意事項】',
+    '  ⚠ 首次測試以中間尺寸開始，再依燃燒狀況調整。',
+    '  ⚠ 每次只調整 ±1 號，便於判斷差異。',
+    '  ⚠ 建議燃燒測試 2–4 小時後觀察。','',
+    '── 由 CM² 燭芯選擇小幫手產生 ──'
+  ].filter(Boolean).join('\n');
+  const ok=()=>{
+    document.querySelectorAll('.copy-btn').forEach(b=>{b.textContent='✓ 已複製到剪貼簿！';b.classList.add('copied');});
+    setTimeout(()=>{document.querySelectorAll('.copy-btn').forEach(b=>{b.textContent='📋 複製結果';b.classList.remove('copied');});},2500);
+  };
+  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(L).then(ok).catch(()=>fb(L,ok));
+  else fb(L,ok);
+  function fb(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');cb();}catch(e){}document.body.removeChild(ta);}
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
